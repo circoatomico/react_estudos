@@ -5,6 +5,7 @@ import { Post } from '../../components/Post';
 
 import './styles.css';
 import { Button } from '../../components/Button';
+import { TextInput } from '../../components/TextInput';
 
 class Home extends Component {
 
@@ -13,7 +14,8 @@ class Home extends Component {
     page: 0,
     postsPerPage: 3,
     allPosts: [],
-    posts: []
+    posts: [],
+    searchValue: "",
   }
   
   loadPosts = async () => {
@@ -49,29 +51,64 @@ class Home extends Component {
   async componentDidMount() {
     await this.loadPosts();
   }
+
+  handleChange = (e) => {
+    const {value} = e.target
+    this.setState({searchValue: value})
+    
+  }
   
   render() {
     
     // Desestruturação
-    const { posts, page, postsPerPage, allPosts } = this.state
+    const { posts, page, postsPerPage, allPosts, searchValue } = this.state
     const noMorePosts = page + postsPerPage >= allPosts.length
+
+    const filteredPosts = !!searchValue ? 
+      allPosts.filter(post => {
+        return post.title.toLowerCase().includes(searchValue.toLowerCase())
+      })
+    : posts;
+
     return (
       <>
-       <div className="App">
-         <header className="App-header">
-            <section className="container">
+       <div className="App"> 
+          <section className="container">
+
+            {!!searchValue && (
+              <>
+                <h1>search value</h1>
+              </>
+            )}
+
+            <TextInput
+              searchValue={searchValue}
+              handleChange={this.handleChange}
+            />
+
+            <br/>
+            <br/>
+ 
+            {filteredPosts.length > 0 && (
               <Post 
-                posts={posts}
+              posts={filteredPosts}
               />
-              <div className="button-container">
+            )}
+
+            {filteredPosts.length === 0 && (
+              <h2>Nenhum post encontrado</h2>
+            )}
+
+            <div className="button-container">
+              {!searchValue && (
                 <Button 
-                  text="Load More posts" 
-                  disabled={noMorePosts}
-                  onClick={this.loadMorePosts}
-                  />
-              </div>
-            </section>
-         </header>
+                text="Load More posts" 
+                disabled={noMorePosts}
+                onClick={this.loadMorePosts}
+                />
+              )}
+            </div>
+          </section> 
        </div>
      </>
     )
